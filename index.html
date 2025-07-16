@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dynamic Pricing Predictor</title>
+</head>
+<body>
+  <h2>Predict Demand & Discount</h2>
+  
+  <label>Store ID:</label><br/>
+  <select id="store">
+    <option value="">Select Store ID</option>
+    <option value="S001">S001</option>
+    <option value="S002">S002</option>
+    <option value="S003">S003</option>
+    <!-- Add more store IDs here -->
+  </select><br/><br/>
+
+  <label>Product ID:</label><br/>
+  <select id="product">
+    <option value="">Select Product ID</option>
+    <option value="P0001">P0001</option>
+    <option value="P0002">P0002</option>
+    <option value="P0003">P0003</option>
+    <!-- Add more product IDs here -->
+  </select><br/><br/>
+
+  <label>Inventory Level:</label><br/>
+  <input type="number" id="inventory" placeholder="e.g. 231" /><br/><br/>
+
+  <label>Units Sold:</label><br/>
+  <input type="number" id="sold" placeholder="e.g. 127" /><br/><br/>
+
+  <label>Units Ordered:</label><br/>
+  <input type="number" id="ordered" placeholder="e.g. 55" /><br/><br/>
+
+  <label>Price:</label><br/>
+  <input type="number" step="0.01" id="price" placeholder="e.g. 33.50" /><br/><br/>
+
+  <label>Competitor Pricing:</label><br/>
+  <input type="number" step="0.01" id="comp_price" placeholder="e.g. 29.69" /><br/><br/>
+
+  <label>Weather Condition:</label><br/>
+  <select id="weather">
+    <option value="">Select Weather</option>
+    <option value="Sunny">Sunny</option>
+    <option value="Rainy">Rainy</option>
+    <option value="Cloudy">Cloudy</option>
+    <option value="Snowy">Snowy</option>
+    <!-- Add more weather types if needed -->
+  </select><br/><br/>
+
+  <label>Seasonality:</label><br/>
+  <select id="season">
+    <option value="">Select Seasonality</option>
+    <option value="Spring">Spring</option>
+    <option value="Summer">Summer</option>
+    <option value="Autumn">Autumn</option>
+    <option value="Winter">Winter</option>
+    <!-- Add more seasons if needed -->
+  </select><br/><br/>
+
+  <button onclick="predict()">Predict</button>
+
+  <h3>Prediction Result:</h3>
+  <pre id="result"></pre>
+
+<script>
+async function predict() {
+  const data = {
+    Store_ID: document.getElementById("store").value,
+    Product_ID: document.getElementById("product").value,
+    Inventory_Level: parseFloat(document.getElementById("inventory").value),
+    Units_Sold: parseFloat(document.getElementById("sold").value),
+    Units_Ordered: parseFloat(document.getElementById("ordered").value),
+    Price: parseFloat(document.getElementById("price").value),
+    Competitor_Pricing: parseFloat(document.getElementById("comp_price").value),
+    Weather_Condition: document.getElementById("weather").value,
+    Seasonality: document.getElementById("season").value
+  };
+
+  if (
+    !data.Store_ID || !data.Product_ID || isNaN(data.Inventory_Level) || 
+    isNaN(data.Units_Sold) || isNaN(data.Units_Ordered) || isNaN(data.Price) || 
+    isNaN(data.Competitor_Pricing) || !data.Weather_Condition || !data.Seasonality
+  ) {
+    alert("Please fill all fields correctly.");
+    return;
+  }
+
+  const response = await fetch('https://dynamic-pricing-model-copv.onrender.com/predict/', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data),
+    mode:"cors"
+  });
+
+  if (!response.ok) {
+    document.getElementById("result").innerText = `Error: ${response.status} ${response.statusText}`;
+    return;
+  }
+
+  const result = await response.json();
+  console.log('output got');
+  
+  document.getElementById("result").innerText = 
+    `Demand Forecast: ${result.demand_forecast.toFixed(2)}\nDiscount Prediction: ${result.discount_prediction.toFixed(2)}%`;
+}
+</script>
+
+</body>
+</html>
